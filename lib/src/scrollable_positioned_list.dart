@@ -33,7 +33,7 @@ const int _screenScrollCount = 2;
 ///
 /// All other parameters are the same as specified in [ListView].
 class ScrollablePositionedList extends StatefulWidget {
-  static bool cacheList = true;
+  static bool cacheList = false;
 
   /// Create a [ScrollablePositionedList] whose items are provided by
   /// [itemBuilder].
@@ -289,8 +289,6 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     }
   }
 
-  Widget _widget;
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -336,28 +334,24 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
                 builder: (context, child) => Opacity(
                   opacity: frontOpacity.value,
                   child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      if (ScrollablePositionedList.cacheList && _widget != null)
-                        return _widget;
-                      return _widget = PositionedList(
-                        itemBuilder: widget.itemBuilder,
-                        separatorBuilder: widget.separatorBuilder,
-                        itemCount: widget.itemCount,
-                        itemPositionNotifier: frontItemPositionNotifier,
-                        positionedIndex: frontTarget,
-                        controller: frontScrollController,
-                        scrollDirection: widget.scrollDirection,
-                        reverse: widget.reverse,
-                        cacheExtent: _cacheExtent(constraints),
-                        alignment: frontAlignment,
-                        physics: widget.physics,
-                        addSemanticIndexes: widget.addSemanticIndexes,
-                        semanticChildCount: widget.semanticChildCount,
-                        padding: widget.padding,
-                        addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
-                        addRepaintBoundaries: widget.addRepaintBoundaries,
-                      );
-                    },
+                    builder: (context, constraints) => PositionedList(
+                      itemBuilder: widget.itemBuilder,
+                      separatorBuilder: widget.separatorBuilder,
+                      itemCount: widget.itemCount,
+                      itemPositionNotifier: frontItemPositionNotifier,
+                      positionedIndex: frontTarget,
+                      controller: frontScrollController,
+                      scrollDirection: widget.scrollDirection,
+                      reverse: widget.reverse,
+                      cacheExtent: _cacheExtent(constraints),
+                      alignment: frontAlignment,
+                      physics: widget.physics,
+                      addSemanticIndexes: widget.addSemanticIndexes,
+                      semanticChildCount: widget.semanticChildCount,
+                      padding: widget.padding,
+                      addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
+                      addRepaintBoundaries: widget.addRepaintBoundaries,
+                    ),
                   ),
                 ),
               ),
