@@ -33,6 +33,8 @@ const int _screenScrollCount = 2;
 ///
 /// All other parameters are the same as specified in [ListView].
 class ScrollablePositionedList extends StatefulWidget {
+  static bool cacheList = true;
+
   /// Create a [ScrollablePositionedList] whose items are provided by
   /// [itemBuilder].
   const ScrollablePositionedList.builder({
@@ -287,51 +289,57 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     }
   }
 
+  Widget _widget;
+
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: () => cancelScrollCallback?.call(),
-        excludeFromSemantics: true,
-        child: Stack(
-          children: <Widget>[
-            if (_showBackList)
-              PostMountCallback(
-                key: const ValueKey<String>('Back'),
-                callback: () {
-                  startAnimationCallback();
-                },
-                child: LayoutBuilder(
-                  builder: (context, constraints) => PositionedList(
-                    itemBuilder: widget.itemBuilder,
-                    separatorBuilder: widget.separatorBuilder,
-                    itemCount: widget.itemCount,
-                    positionedIndex: backTarget,
-                    controller: backScrollController,
-                    itemPositionNotifier: backItemPositionNotifier,
-                    scrollDirection: widget.scrollDirection,
-                    reverse: widget.reverse,
-                    cacheExtent: _cacheExtent(constraints),
-                    alignment: backAlignment,
-                    physics: widget.physics,
-                    addSemanticIndexes: widget.addSemanticIndexes,
-                    semanticChildCount: widget.semanticChildCount,
-                    padding: widget.padding,
-                    addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
-                    addRepaintBoundaries: widget.addRepaintBoundaries,
-                  ),
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => cancelScrollCallback?.call(),
+      excludeFromSemantics: true,
+      child: Stack(
+        children: <Widget>[
+          if (_showBackList)
+            PostMountCallback(
+              key: const ValueKey<String>('Back'),
+              callback: () {
+                startAnimationCallback();
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) => PositionedList(
+                  itemBuilder: widget.itemBuilder,
+                  separatorBuilder: widget.separatorBuilder,
+                  itemCount: widget.itemCount,
+                  positionedIndex: backTarget,
+                  controller: backScrollController,
+                  itemPositionNotifier: backItemPositionNotifier,
+                  scrollDirection: widget.scrollDirection,
+                  reverse: widget.reverse,
+                  cacheExtent: _cacheExtent(constraints),
+                  alignment: backAlignment,
+                  physics: widget.physics,
+                  addSemanticIndexes: widget.addSemanticIndexes,
+                  semanticChildCount: widget.semanticChildCount,
+                  padding: widget.padding,
+                  addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
+                  addRepaintBoundaries: widget.addRepaintBoundaries,
                 ),
               ),
-            if (_showFrontList)
-              PostMountCallback(
-                key: const ValueKey<String>('Front'),
-                callback: () {
-                  startAnimationCallback();
-                },
-                child: AnimatedBuilder(
-                  animation: frontOpacity,
-                  builder: (context, child) => Opacity(
-                    opacity: frontOpacity.value,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => PositionedList(
+            ),
+          if (_showFrontList)
+            PostMountCallback(
+              key: const ValueKey<String>('Front'),
+              callback: () {
+                startAnimationCallback();
+              },
+              child: AnimatedBuilder(
+                animation: frontOpacity,
+                builder: (context, child) => Opacity(
+                  opacity: frontOpacity.value,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (ScrollablePositionedList.cacheList && _widget != null)
+                        return _widget;
+                      return _widget = PositionedList(
                         itemBuilder: widget.itemBuilder,
                         separatorBuilder: widget.separatorBuilder,
                         itemCount: widget.itemCount,
@@ -348,14 +356,16 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
                         padding: widget.padding,
                         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
                         addRepaintBoundaries: widget.addRepaintBoundaries,
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               ),
-          ],
-        ),
-      );
+            ),
+        ],
+      ),
+    );
+  }
 
   double _cacheExtent(BoxConstraints constraints) =>
       widget.minCacheExtent == null

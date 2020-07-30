@@ -44,6 +44,7 @@ class _ScrollablePositionedListPageState
 
   /// The alignment to be used next time the user scrolls or jumps to an item.
   double alignment = 0;
+  FocusNode _focusNode;
 
   @override
   void initState() {
@@ -59,15 +60,16 @@ class _ScrollablePositionedListPageState
         numberOfItems,
         (int _) =>
             Color(colorGenerator.nextInt(pow(2, 32) - 1)).withOpacity(1));
+    _focusNode = FocusNode();
   }
 
   @override
   Widget build(BuildContext context) => Material(
-        child: OrientationBuilder(
-          builder: (context, orientation) => Column(
+        child: SafeArea(
+          child: Column(
             children: <Widget>[
               Expanded(
-                child: list(orientation),
+                child: list(),
               ),
               positionsView,
               Row(
@@ -80,7 +82,11 @@ class _ScrollablePositionedListPageState
                     ],
                   ),
                 ],
-              )
+              ),
+              TextField(
+                focusNode: _focusNode,
+                decoration: InputDecoration(),
+              ),
             ],
           ),
         ),
@@ -98,17 +104,6 @@ class _ScrollablePositionedListPageState
             ),
           ),
         ],
-      );
-
-  Widget list(Orientation orientation) => ScrollablePositionedList.builder(
-        itemCount: numberOfItems,
-        itemBuilder: (context, index) => item(index, orientation),
-        itemScrollController: itemScrollController,
-        itemPositionsListener: itemPositionsListener,
-        reverse: reversed,
-        scrollDirection: orientation == Orientation.portrait
-            ? Axis.vertical
-            : Axis.horizontal,
       );
 
   Widget get positionsView => ValueListenableBuilder<Iterable<ItemPosition>>(
@@ -161,7 +156,6 @@ class _ScrollablePositionedListPageState
           scrollButton(10),
           scrollButton(100),
           scrollButton(1000),
-          scrollButton(5000),
         ],
       );
 
@@ -173,7 +167,6 @@ class _ScrollablePositionedListPageState
           jumpButton(10),
           jumpButton(100),
           jumpButton(1000),
-          jumpButton(5000),
         ],
       );
 
@@ -202,11 +195,21 @@ class _ScrollablePositionedListPageState
   void jumpTo(int index) =>
       itemScrollController.jumpTo(index: index, alignment: alignment);
 
+  Widget list() {
+    return ScrollablePositionedList.builder(
+      itemCount: numberOfItems,
+      itemBuilder: (context, index) => item(index),
+      itemScrollController: itemScrollController,
+      itemPositionsListener: itemPositionsListener,
+      reverse: reversed,
+    );
+  }
+
   /// Generate item number [i].
-  Widget item(int i, Orientation orientation) {
+  Widget item(int i) {
+    print("item");
     return SizedBox(
-      height: orientation == Orientation.portrait ? itemHeights[i] : null,
-      width: orientation == Orientation.landscape ? itemHeights[i] : null,
+      height: itemHeights[i],
       child: Container(
         color: itemColors[i],
         child: Center(
